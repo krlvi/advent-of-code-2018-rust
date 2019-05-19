@@ -4,7 +4,47 @@ use std::io::{BufRead, BufReader};
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let file = File::open(args.get(1).expect("No file provided")).expect("Could not open file");
-    part_one(file);
+    //part_one(file);
+    part_two(file);
+}
+
+fn part_two(file: File) {
+    let claims: Vec<Claim> = BufReader::new(file)
+        .lines()
+        .map(|l| l.expect("Could not read line"))
+        .map(|l| parse_claim(l))
+        .collect();
+
+    for (i, c) in claims.iter().enumerate() {
+        if i < claims.len() {
+            let mut overlapped = false;
+            for o in &claims {
+                if overlap(c, o) {
+                    overlapped = true;
+                    break;
+                }
+            }
+            if overlapped == false {
+                println!("ID {} didn't overlap", c.id);
+            }
+        }
+    }
+}
+
+fn overlap(a: &Claim, b: &Claim) -> bool {
+    // If it's the same claim, don't count as overlap
+    if a.id == b.id {
+        return false;
+    }
+    // If either is to the right of the other
+    if a.x_margin + 1 > b.x_margin + b.x_size || b.x_margin + 1 > a.x_margin + a.x_size {
+        return false;
+    }
+    // If either is below the other
+    if a.y_margin + 1 > b.y_margin + b.y_size || b.y_margin + 1 > a.y_margin + a.y_size {
+        return false;
+    }
+    true
 }
 
 fn part_one(file: File) {
