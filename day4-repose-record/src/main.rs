@@ -1,0 +1,67 @@
+use chrono::NaiveDateTime;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
+fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let file = File::open(args.get(1).expect("No file provided")).expect("Could not open file");
+    part_one(file);
+}
+
+fn part_one(file: File) {
+    let entries = parse_entries(file);
+    for e in entries {
+        println!("{:?}", e);
+    }
+}
+
+fn parse_entries(file: File) -> Vec<LogEntry> {
+    let mut entries: Vec<LogEntry> = Vec::new();
+    for l in BufReader::new(file).lines() {
+        let s = l.expect("Could not parse line");
+        let tokens: Vec<&str> = s.split(&['[', ']'][..]).collect();
+        let time = NaiveDateTime::parse_from_str(
+            tokens.get(1).expect("Date element wasn't present"),
+            "%Y-%m-%d %H:%M",
+        )
+        .expect("Could not unwrap datetime");
+
+        let rem = tokens.get(2).expect("Element wasn't present");
+        let mut awake = true;
+        if rem.contains("falls asleep") {
+            awake = false;
+        }
+        let mut guard_id = 0;
+        if rem.contains("begins shift") {
+            let tokens: Vec<&str> = rem.split(&['#', ' '][..]).collect();
+            guard_id = tokens
+                .get(3)
+                .expect("Guard id not present")
+                .parse::<usize>()
+                .expect("Could not parse guard id");
+        }
+        let entry = LogEntry {
+            time,
+            guard_id,
+            awake,
+        };
+        entries.push(entry);
+    }
+    entries.sort_by(|a, b| Ord::cmp(&a.time, &b.time));
+    let mut last_id = 0;
+    for mut e in &mut entries {
+        if e.guard_id == 0 {
+            e.guard_id = last_id;
+        } else {
+            last_id = e.guard_id;
+        }
+    }
+    entries
+}
+
+#[derive(Debug)]
+struct LogEntry {
+    time: NaiveDateTime,
+    guard_id: usize,
+    awake: bool,
+}
