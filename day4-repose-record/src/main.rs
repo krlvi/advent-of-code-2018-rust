@@ -10,7 +10,7 @@ fn main() {
     part_one(file);
 }
 
-fn part_one(file: File) {
+fn compute_guard_stats(file: File) -> HashMap<usize, HashMap<usize, usize>> {
     let entries = parse_entries(file);
     let mut guard_stats: HashMap<usize, HashMap<usize, usize>> = HashMap::new();
     let guards: HashSet<usize> = entries.iter().map(|x| x.guard_id).collect();
@@ -51,14 +51,16 @@ fn part_one(file: File) {
         sleep_start = Some(this_min);
         guard_stats.insert(e.guard_id, mins);
     }
-
+    guard_stats
+}
+fn part_one(file: File) {
+    let guard_stats = compute_guard_stats(file);
     let mut totals: Vec<(&usize, usize)> = guard_stats
         .iter()
         .map(|(k, v)| (k, v.iter().map(|(_, vv)| *vv).fold(0, |acc, x| acc + x)))
         .collect();
     totals.sort_by(|(_, xv), (_, yv)| yv.cmp(xv));
     let (sleepiest_guard, _) = totals.first().expect("Couldnt get value");
-    println!("{:?}", guard_stats.get(&sleepiest_guard));
 
     let mut stats: Vec<(&usize, &usize)> = guard_stats
         .get(sleepiest_guard)
@@ -70,7 +72,7 @@ fn part_one(file: File) {
 
     let (sleepiest_min, _) = stats.first().expect("Couldnt get value");
 
-    println!("Guard is {} Min is {}", sleepiest_guard, sleepiest_min);
+    println!("Guard is {}, Minute is {}", sleepiest_guard, sleepiest_min);
     println!("Result is {}", **sleepiest_guard * **sleepiest_min);
 }
 
