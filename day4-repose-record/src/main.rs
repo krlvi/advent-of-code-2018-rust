@@ -7,7 +7,8 @@ use std::io::{BufRead, BufReader};
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let file = File::open(args.get(1).expect("No file provided")).expect("Could not open file");
-    part_one(file);
+    //part_one(file);
+    part_two(file);
 }
 
 fn compute_guard_stats(file: File) -> HashMap<usize, HashMap<usize, usize>> {
@@ -53,6 +54,31 @@ fn compute_guard_stats(file: File) -> HashMap<usize, HashMap<usize, usize>> {
     }
     guard_stats
 }
+
+fn part_two(file: File) {
+    let guard_stats = compute_guard_stats(file);
+    let mut totals: Vec<(&usize, usize)> = guard_stats
+        .iter()
+        .map(|(k, v)| (k, v.iter().map(|(_, vv)| *vv).max().unwrap()))
+        .collect();
+    totals.sort_by(|(_, xv), (_, yv)| yv.cmp(xv));
+    println!("{:?}", totals);
+    let (sleepiest_guard, _) = totals.first().expect("Couldnt get value");
+
+    let mut stats: Vec<(&usize, &usize)> = guard_stats
+        .get(sleepiest_guard)
+        .expect("Couldnt find guard stats")
+        .iter()
+        .map(|(k, v)| (k, v))
+        .collect();
+    stats.sort_by(|(_, xv), (_, yv)| yv.cmp(xv));
+
+    let (sleepiest_min, _) = stats.first().expect("Couldnt get value");
+
+    println!("Guard is {}, Minute is {}", sleepiest_guard, sleepiest_min);
+    println!("Result is {}", **sleepiest_guard * **sleepiest_min);
+}
+
 fn part_one(file: File) {
     let guard_stats = compute_guard_stats(file);
     let mut totals: Vec<(&usize, usize)> = guard_stats
