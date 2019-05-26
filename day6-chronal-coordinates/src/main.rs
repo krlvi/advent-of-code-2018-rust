@@ -7,6 +7,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let file = File::open(args.get(1).expect("No file provided")).expect("Could not open file");
     let points = parse_points(file);
+    part_one(&points);
     part_two(&points);
 }
 
@@ -38,7 +39,7 @@ fn parse_points(file: File) -> Vec<Point> {
     points
 }
 
-fn part_two(points: &Vec<Point>) {
+fn part_two(points: &[Point]) {
     let (x_min, x_max, y_min, y_max) = board_dim(points);
     let mut within = 0;
     for y in y_min..=y_max {
@@ -46,14 +47,14 @@ fn part_two(points: &Vec<Point>) {
             let p = Point { x, y };
             let cl = distances(&p, points);
             if cl < 10000 {
-                within = within + 1;
+                within += 1;
             }
         }
     }
     println!("{}", within);
 }
 
-fn part_one(points: &Vec<Point>) {
+fn part_one(points: &[Point]) {
     let (x_min, x_max, y_min, y_max) = board_dim(points);
     let mut counts: HashMap<String, usize> = HashMap::new();
     let mut blacklist: HashSet<String> = HashSet::new();
@@ -78,9 +79,8 @@ fn part_one(points: &Vec<Point>) {
                     }
                 }
             }
-            //row.push(cl);
         }
-        println!("");
+        println!();
     }
 
     let mut res: Vec<(&String, &usize)> = counts.iter().collect();
@@ -89,15 +89,15 @@ fn part_one(points: &Vec<Point>) {
     println!("{:?}", res);
 }
 
-fn distances(p: &Point, pts: &Vec<Point>) -> i32 {
+fn distances(p: &Point, pts: &[Point]) -> i32 {
     let mut dist = 0;
     for pp in pts {
-        dist = dist + distance(p, &pp);
+        dist += distance(p, &pp);
     }
     dist
 }
 
-fn closest(p: &Point, pts: &Vec<Point>) -> Option<Point> {
+fn closest(p: &Point, pts: &[Point]) -> Option<Point> {
     let mut closest = pts.get(0).expect("Couldnt get first point");
     let mut closest_dist = std::i32::MAX;
     let mut tie = false;
@@ -124,7 +124,7 @@ fn closest(p: &Point, pts: &Vec<Point>) -> Option<Point> {
     }
 }
 
-fn board_dim(points: &Vec<Point>) -> (i32, i32, i32, i32) {
+fn board_dim(points: &[Point]) -> (i32, i32, i32, i32) {
     let x_min = points
         .iter()
         .map(|p| p.x)
