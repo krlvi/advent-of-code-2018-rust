@@ -7,7 +7,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let file = File::open(args.get(1).expect("No file provided")).expect("Could not open file");
     let points = parse_points(file);
-    part_one(&points);
+    part_two(&points);
 }
 
 #[derive(Debug)]
@@ -36,6 +36,21 @@ fn parse_points(file: File) -> Vec<Point> {
         points.push(Point { x, y });
     }
     points
+}
+
+fn part_two(points: &Vec<Point>) {
+    let (x_min, x_max, y_min, y_max) = board_dim(points);
+    let mut within = 0;
+    for y in y_min..=y_max {
+        for x in x_min..=x_max {
+            let p = Point { x, y };
+            let cl = distances(&p, points);
+            if cl < 10000 {
+                within = within + 1;
+            }
+        }
+    }
+    println!("{}", within);
 }
 
 fn part_one(points: &Vec<Point>) {
@@ -72,6 +87,14 @@ fn part_one(points: &Vec<Point>) {
     res.sort_by(|(_, xv), (_, yv)| yv.cmp(xv));
     res.truncate(1);
     println!("{:?}", res);
+}
+
+fn distances(p: &Point, pts: &Vec<Point>) -> i32 {
+    let mut dist = 0;
+    for pp in pts {
+        dist = dist + distance(p, &pp);
+    }
+    dist
 }
 
 fn closest(p: &Point, pts: &Vec<Point>) -> Option<Point> {
